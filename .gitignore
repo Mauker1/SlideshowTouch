@@ -12,4 +12,4 @@
 *.a
 
 # Plataform specific Qt files
-*.pro
+*.user
