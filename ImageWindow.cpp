@@ -134,11 +134,20 @@ void ImageWindow::swipeEvent(QSwipeGesture *swipeGesture){
 void ImageWindow::checkMouseClick(int pos){
     std::cout << "Mouse event! Mouse Clicked!" << std::endl;
     if (pos <= this->width()/2){
-        previousImage();
+        //previousImage();
     }
     else {
-        nextImage();
+        //nextImage();
     }
+}
+
+bool ImageWindow::event(QEvent * event){
+    if (event->type() == QEvent::Gesture){
+        QGestureEvent * gEvent = static_cast<QGestureEvent *>(event);
+        checkGestureEvent(gEvent);
+        return true;
+    }
+    return false;
 }
 
 bool ImageWindow::eventFilter(QObject *watched, QEvent *event){

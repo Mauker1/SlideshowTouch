@@ -26,6 +26,7 @@ private slots:
     void quit();
 
 protected:
+    bool event(QEvent *);
     bool eventFilter(QObject *, QEvent *);
 
 private:
