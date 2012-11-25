@@ -8,6 +8,7 @@ int main (int argc, char* argv[]){
     ImageWindow imagesWindow;
 
     imagesWindow.show();
+    imagesWindow.installEventFilter(&imagesWindow);
     imagesWindow.setDir();
 
 

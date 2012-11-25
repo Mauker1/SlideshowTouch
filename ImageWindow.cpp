@@ -11,8 +11,10 @@ ImageWindow::ImageWindow(){
     mainWindow->setBackgroundRole(QPalette::Base); // Setar background.
     mainWindow->setSizePolicy(QSizePolicy::Ignored,QSizePolicy::Ignored);
     mainWindow->setScaledContents(true); // Auto escalar as imagens.
-    mainWindow->setAttribute(Qt::WA_AcceptTouchEvents); // Aceitar eventos de toque.
+    mainWindow->grabGesture(Qt::PinchGesture); // Aceitar gesto swipe.
     mainWindow->grabGesture(Qt::SwipeGesture); // Aceitar gesto swipe.
+    mainWindow->setAttribute(Qt::WA_AcceptTouchEvents); // Aceitar eventos de toque.
+
 
     imageIndex = 0;
     imageCount = 0;
@@ -62,8 +64,6 @@ void ImageWindow::setDir(){
             openImage();
         }
     }
-
-
 }
 
 void ImageWindow::openImage(){
@@ -117,6 +117,9 @@ void ImageWindow::checkGestureEvent(QGestureEvent * event){
     if (QGesture *swipe = event->gesture(Qt::SwipeGesture)){
         swipeEvent(static_cast<QSwipeGesture *>(swipe));
     }
+    else if (QGesture *pinch = event->gesture(Qt::PinchGesture)){
+        pinchEvent(static_cast<QPinchGesture *>(pinch));
+    }
 }
 
 void ImageWindow::swipeEvent(QSwipeGesture *swipeGesture){
@@ -131,33 +134,51 @@ void ImageWindow::swipeEvent(QSwipeGesture *swipeGesture){
 
 }
 
-void ImageWindow::checkMouseClick(int pos){
-    std::cout << "Mouse event! Mouse Clicked!" << std::endl;
-    if (pos <= this->width()/2){
-        //previousImage();
-    }
-    else {
-        //nextImage();
+void ImageWindow::pinchEvent(QPinchGesture * pinch){
+    if (pinch->state() == Qt::GestureFinished){
+        std::cout << "Pinch finalizado! " << "Rotation angle: " << pinch->rotationAngle() << std::endl;
+
+        if (pinch->rotationAngle() > 0){
+            nextImage();
+        }
+        else if (pinch->rotationAngle() < 0){
+            previousImage();
+        }
     }
 }
 
-bool ImageWindow::event(QEvent * event){
-    if (event->type() == QEvent::Gesture){
-        QGestureEvent * gEvent = static_cast<QGestureEvent *>(event);
-        checkGestureEvent(gEvent);
-        return true;
+void ImageWindow::checkMouseClick(int pos){
+    std::cout << "Mouse event! Mouse Clicked!" << std::endl;
+    if (pos <= this->width()/2){
+        previousImage();
     }
-    return false;
+    else {
+        nextImage();
+    }
 }
 
 bool ImageWindow::eventFilter(QObject *watched, QEvent *event){
     if (qobject_cast<QLabel*>(watched) != NULL && event->type() == QEvent::MouseButtonPress){
+
         const QMouseEvent *me = static_cast<const QMouseEvent*>(event);
 
         const QPoint point = me->pos();
         int pos = point.x();
 
         checkMouseClick(pos);
+        return true;
+    }
+    else if (qobject_cast<QLabel*>(watched) != NULL && event->type() == QEvent::NativeGesture){
+
+        std::cout << "Native gesture detected! Type: " << event->type() << std::endl;
+        QGestureEvent *ge = static_cast<const QGestureEvent*>(event);
+        checkGestureEvent(ge);
+        return true;
+    }
+    else if (qobject_cast<QLabel*>(watched) != NULL && event->type() == QEvent::Gesture){
+        std::cout << "Gesture detected! Type: " << event->type() << std::endl;
+        QGestureEvent *ge = static_cast<const QGestureEvent*>(event);
+        checkGestureEvent(ge);
         return true;
     }
     else{
